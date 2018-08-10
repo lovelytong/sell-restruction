@@ -27,7 +27,11 @@
             {{item.name}}
           </h1>
           <ul>
-            <li v-for="food in item.foods" class="food-item" :key="food.name">
+            <li v-for="food in item.foods"
+                class="food-item"
+                :key="food.name"
+                @click="selectFood(food, $event)"
+            >
               <div class="icon">
                 <img :src="food.icon" width="57" height="57">
               </div>
@@ -40,26 +44,39 @@
                 <div class="price">
                   <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">{{food.oldPrice}}</span>
                 </div>
-                <div class="cartcontrol-wrapper"></div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol></cartcontrol>
+                </div>
               </div>
-
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <shopcart></shopcart>
+    <food :food="selectedFood" ref="food"></food>
   </div>
 </template>
 
 <script>
   import {mapActions, mapState} from 'vuex'
   import BScroll from 'better-scroll'
+  import cartcontrol from '../cartcontrol/cartcontrol'
+  import shopcart from '../shopcart/shopcart'
+  import food from '../food/food'
   export default {
     data () {
       return {
         listHeight: [],
-        scrollY: 0
+        scrollY: 0,
+        selectedFood: {}
+
       }
+    },
+    components: {
+      cartcontrol,
+      shopcart,
+      food
     },
     computed: {
       ...mapState(['goodsData']),
@@ -77,9 +94,16 @@
     },
     methods: {
       ...mapActions(['getData']),
+      selectFood (food, event) {
+        if (!event._constructed) {
+           return
+        }
+        this.selectedFood = food
+        this.$refs.food.show()
+      },
       getGoodsData: async function () {
         let res = await this.getData({url: 'goods'})
-        this.$store.state.goodsData = Object.assign({}, res.data)
+        this.$store.state.goodsData = res.data
         // console.log(this.goodsData)
       },
       selectMenu (index, event) {
@@ -204,6 +228,7 @@
         background: #f3f5f7
       .food-item
         display: flex
+        position: relative
         margin: 18px
         padding-bottom: 18px
         border-bottom: 1px rgba(7, 17, 27, 0.1) solid
@@ -242,4 +267,8 @@
               text-decoration: line-through
               font-size: 10px
               color: rgb(147, 153, 159)
+          .cartcontrol-wrapper
+            position: absolute
+            right: 0
+            bottom: 12px
 </style>

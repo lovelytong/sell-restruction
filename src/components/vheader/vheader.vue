@@ -84,7 +84,7 @@
 
       getSellData: async function () {
         let res = await this.getData({url: '/seller'})
-        this.$store.state.sellDate = Object.assign({}, res.data)
+        this.$store.state.sellDate = res.data
       }
     },
 
