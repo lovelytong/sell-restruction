@@ -25,10 +25,21 @@
         </div>
       </div>
       <splite></splite>
-      <ratingselect></ratingselect>
+      <ratingselect :ratings="ratingData"
+                    @select="selectRating"
+                    @toggle="toggleContent"
+                    :selectType="selectType"
+                    :onlyContent="onlyContent"
+      >
+      </ratingselect>
       <div class="rating-wrapper">
         <ul>
-          <li v-for="rating in ratingData" class="rating-item" :key="rating.rateTime">
+          <li
+            v-for="rating in ratingData"
+            class="rating-item"
+            :key="rating.rateTime"
+            v-show="needShow(rating.rateType, rating.text)"
+          >
             <div class="avatar">
               <img width="28" height="28" :src="rating.avatar">
             </div>
@@ -64,6 +75,12 @@
 
   export default {
     name: 'ratings',
+    data () {
+      return {
+        selectType: 2,
+        onlyContent: true
+      }
+    },
     components: {
       splite,
       star,
@@ -79,8 +96,33 @@
       ...mapActions(['getData']),
       getRatingData: async function () {
         let res = await this.getData({url: 'ratings'})
-        this.$store.state.ratingData = res.data
-        // console.log(this.ratingData)
+        if (!res.errno) {
+          this.$store.state.ratingData = res.data
+        } else {
+          console.log(res.errno)
+        }
+      },
+      toggleContent () {
+        this.onlyContent = !this.onlyContent
+        this.$nextTick(() => {
+          this.scroll.refresh()
+        })
+      },
+      selectRating (type) {
+        this.selectType = type
+        this.$nextTick(() => {
+          this.scroll.refresh()
+        })
+      },
+      needShow (type, text) {
+        if (this.onlyContent && !text) {
+          return false
+        }
+        if (this.selectType === 2) {
+          return true
+        } else {
+          return type === this.selectType
+        }
       }
     },
     created () {

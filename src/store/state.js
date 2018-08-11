@@ -1,5 +1,5 @@
 export default {
   sellDate: {},
-  goodsData: {},
-  ratingData: {}
+  goodsData: [],
+  ratingData: []
 }

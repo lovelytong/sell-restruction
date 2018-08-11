@@ -2,28 +2,28 @@
   <div class="ratingselect">
     <div class="rating-type">
       <span class="block positive"
-            :class="{active: thisselect===2}"
-            @click="thisselect = 2"
+            :class="{active: selectType===2}"
+            @click="select(2, $event)"
       >
-        全部
-        <span class="count">3</span>
+        {{desc.all}}
+        <span class="count">{{ratings.length}}</span>
       </span>
       <span class="block positive"
-            :class="{active: thisselect===1}"
-            @click="thisselect = 1"
+            :class="{active: selectType===0}"
+            @click="select(0, $event)"
       >
-        满意
-        <span class="count">2</span>
+        {{desc.positive}}
+        <span class="count">{{positives.length}}</span>
       </span>
       <span class="block negative"
-            :class="{active: thisselect===0}"
-            @click="thisselect = 0"
+            :class="{active: selectType===1}"
+            @click="select(1, $event)"
       >
-        不满意
-        <span class="count">1</span>
+        {{desc.negative}}
+        <span class="count">{{negatives.length}}</span>
       </span>
     </div>
-    <div class="switch" @click="onlyContent=!onlyContent">
+    <div class="switch" @click="toggleContent">
       <span class="icon-check_circle" :class="{'on':onlyContent}"></span>
       <span class="text">只看有内容的评价</span>
     </div>
@@ -31,12 +31,60 @@
 </template>
 
 <script>
+  const POSITIVE = 0
+  const NEGATIVE = 1
   const ALL = 2
   export default {
-    data () {
-      return {
-        thisselect: ALL,
-        onlyContent: true
+    props: {
+      ratings: {
+        type: Array,
+        default () {
+          return []
+        }
+      },
+      selectType: {
+        type: Number,
+        default: ALL
+      },
+      onlyContent: {
+        type: Boolean,
+        default: false
+      },
+      desc: {
+        type: Object,
+        default () {
+          return {
+            all: '全部',
+            positive: '满意',
+            negative: '不满意'
+          }
+        }
+      }
+    },
+    computed: {
+      positives () {
+        return this.ratings.filter((rating) => {
+          return rating.rateType === POSITIVE
+        })
+      },
+      negatives () {
+        return this.ratings.filter((rating) => {
+          return rating.rateType === NEGATIVE
+        })
+      }
+    },
+    methods: {
+      select (type, event) {
+        if (!event._constructed) {
+          return
+        }
+        this.$emit('select', type)
+      },
+      toggleContent (event) {
+        if (!event._constructed) {
+          return
+        }
+        this.$emit('toggle')
       }
     }
   }

@@ -4,23 +4,23 @@
       <div class="content" @click="toggleList">
         <div class="content-left">
           <div class="logo-wrapper">
-            <div class="logo">
+            <div class="logo" :class="{'highlight':totalPrice>0}">
               <i class="icon-shopping_cart"></i>
             </div>
-            <div class="num">5</div>
+            <div class="num" v-show="totalNum">{{totalNum}}</div>
           </div>
-          <div class="price">￥36</div>
-          <div class="desc">另需配送费￥6元</div>
+          <div class="price" :class="{'highlight':totalNum>0}">¥{{totalPrice}}</div>
+          <div class="desc">另需配送费¥{{sellDate.deliveryPrice}}元</div>
         </div>
-        <div class="content-right">
-          <div class="pay">去结算</div>
+        <div class="content-right" @click.stop.prevent="pay">
+          <div class="pay" :class="{enough:totalPrice>sellDate.minPrice}">{{payDesc}}</div>
         </div>
       </div>
       <transition name="fold">
-        <div class="shopcart-list" v-show="fold">
+        <div class="shopcart-list" v-show="listShow">
           <div class="list-header">
             <h1 class="title">购物车</h1>
-            <span class="empty">清空</span>
+            <span class="empty" @click.prevent.stop="clearCart">清空</span>
           </div>
           <div class="list-content" ref="listContent">
             <ul>
@@ -30,7 +30,7 @@
                   <span>￥{{food.price*food.count}}</span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  <cartcontrol></cartcontrol>
+                  <cartcontrol :food="food"></cartcontrol>
                 </div>
               </li>
             </ul>
@@ -39,7 +39,7 @@
       </transition>
     </div>
     <transition name="fade">
-      <div class="list-mask" v-show="fold" @click="fold = false"></div>
+      <div class="list-mask" v-show="listShow" @click="fold = false"></div>
     </transition>
   </div>
 </template>
@@ -47,52 +47,56 @@
 <script>
   import BScroll from 'better-scroll'
   import cartcontrol from '../cartcontrol/cartcontrol'
+  import {mapState, mapGetters} from 'vuex'
 
   export default {
     data () {
       return {
-        selectFoods: [
-          {
-            name: '宫保鸡丁',
-            price: 5,
-            count: 1
-          },
-          {
-            name: '宫保鸡丁2',
-            price: 5,
-            count: 2
-          },
-          {
-            name: '宫保鸡丁3',
-            price: 5,
-            count: 1
-          },
-          {
-            name: '宫保鸡丁4',
-            price: 5,
-            count: 1
-          },
-          {
-            name: '宫保鸡丁5',
-            price: 5,
-            count: 1
-          },
-          {
-            name: '宫保鸡丁6',
-            price: 5,
-            count: 1
-          }
-
-        ],
         fold: false
       }
     },
     components: {
       cartcontrol
     },
+    computed: {
+      ...mapState(['goodsData', 'sellDate']),
+      ...mapGetters(['selectFoods']),
+      totalNum () {
+        let count = 0
+        this.selectFoods.forEach((food) => {
+          count += food.count
+        })
+        return count
+      },
+      totalPrice () {
+        let total = 0
+        this.selectFoods.forEach((food) => {
+          total += food.count * food.price
+        })
+        return total
+      },
+      payDesc () {
+        if (this.totalPrice === 0) {
+          return `￥${this.sellDate.minPrice}元起送`
+        } else if (this.totalPrice < this.sellDate.minPrice) {
+          let diff = this.sellDate.minPrice - this.totalPrice
+          return `还差￥${diff}元起送`
+        } else {
+          return `去结算`
+        }
+      },
+      listShow () {
+        if (!this.selectFoods.length) {
+          return false
+        }
+        return this.fold
+      }
+    },
     methods: {
       toggleList () {
-        this.fold = !this.fold
+        if (this.selectFoods.length) {
+          this.fold = !this.fold
+        }
         if (this.fold) {
           this.$nextTick(() => {
             if (!this.scroll) {
@@ -104,6 +108,17 @@
             }
           })
         }
+      },
+      clearCart () {
+        this.selectFoods.forEach((food) => {
+          food.count = 0
+        })
+      },
+      pay () {
+        if (this.totalPrice < this.sellDate.minPrice) {
+          return
+        }
+        window.alert(`支付${this.totalPrice}元`)
       }
     }
   }
@@ -142,12 +157,13 @@
             border-radius: 50%
             text-align: center
             background: #2b343c
-            background: rgb(0, 160, 220)
+            &.highlight
+              background: rgb(0, 160, 220)
+              color: #fff
             .icon-shopping_cart
               line-height: 44px
               font-size: 24px
-              color: #80858a
-              color: #fff
+
           .num
             position: absolute
             top: 0
@@ -172,7 +188,8 @@
           border-right: 1px solid rgba(255, 255, 255, 0.1)
           font-size: 16px
           font-weight: 700
-          color: #fff
+          &.highlight
+            color: #fff
         .desc
           display: inline-block
           vertical-align: top
@@ -188,8 +205,11 @@
           text-align: center
           font-size: 12px
           font-weight: 700
-          background: #00b43c
-          color: #fff
+          background: #2b333b
+          &.enough
+            background: #00b43c
+            color: #fff
+
     .shopcart-list
       position: absolute
       left: 0

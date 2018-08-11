@@ -84,7 +84,11 @@
 
       getSellData: async function () {
         let res = await this.getData({url: '/seller'})
-        this.$store.state.sellDate = res.data
+        if (!res.errno) {
+          this.$store.state.sellDate = res.data
+        } else {
+          console.log(res.errno)
+        }
       }
     },
 

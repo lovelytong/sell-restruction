@@ -10,7 +10,11 @@ export default {
   getData: async function ({state}, payload) {
     try {
       const response = await instance.get(payload.url)
-      return response.data
+      if (response.status === 200) {
+        return response.data
+      } else {
+        console.log(response.status)
+      }
     } catch (error) {
       console.log(error)
     }

@@ -45,7 +45,7 @@
                   <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">{{food.oldPrice}}</span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  <cartcontrol></cartcontrol>
+                  <cartcontrol :food="food"></cartcontrol>
                 </div>
               </div>
             </li>
@@ -103,8 +103,11 @@
       },
       getGoodsData: async function () {
         let res = await this.getData({url: 'goods'})
-        this.$store.state.goodsData = res.data
-        // console.log(this.goodsData)
+        if (!res.errno) {
+          this.$store.state.goodsData = res.data
+        } else {
+          console.log(res.errno)
+        }
       },
       selectMenu (index, event) {
         if (!event._constructed) {

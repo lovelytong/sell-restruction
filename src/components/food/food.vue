@@ -17,9 +17,12 @@
             <span class="now">￥{{food.price}}</span><span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
           </div>
           <div class="cartcontrol-wrapper">
-            <cartcontrol></cartcontrol>
+            <cartcontrol :food="food"></cartcontrol>
           </div>
-          <div class="buy" v-show="!food.count || food.count===0">
+          <div class="buy"
+               v-show="!food.count || food.count===0"
+               @click.stop.prevent="addFirst"
+          >
             加入购物车
           </div>
         </div>
@@ -31,17 +34,31 @@
         <splite></splite>
         <div class="rating">
           <h1 class="title">商品评价</h1>
-          <ratingselect></ratingselect>
+          <ratingselect
+            :ratings="food.ratings"
+            :desc="desc"
+            :selectType="selectType"
+            :onlyContent="onlyContent"
+            @select="selectthisType"
+            @toggle="toggleContent"
+          ></ratingselect>
           <div class="rating-wrapper">
             <ul v-show="food.ratings && food.ratings.length">
-              <li v-for="rating in food.ratings" class="rating-item" :key="rating.username">
+              <li v-for="rating in food.ratings"
+                  class="rating-item"
+                  :key="rating.username"
+                  v-show="needShow(rating.rateType, rating.text)"
+              >
                 <div class="user">
                   <span class="name">{{rating.username}}</span>
                   <img class="avatar" width="12" height="12" :src="rating.avatar">
                 </div>
                 <div class="time">{{rating.rateTime | formatDate}}</div>
                 <p class="text">
-                  <span class="icon-thumb_up"></span>{{rating.text}}
+                  <span
+                    :class="{'icon-thumb_up': rating.rateType === 0,
+                    'icon-thumb_down': rating.rateType === 1}">
+                  </span>{{rating.text}}
                 </p>
               </li>
             </ul>
@@ -57,6 +74,7 @@
 </template>
 
 <script>
+    import Vue from 'vue'
     import cartcontrol from '../cartcontrol/cartcontrol'
     import splite from '../splite/splite'
     import ratingselect from '../ratingselect/ratingselect'
@@ -70,7 +88,14 @@
       },
       data () {
         return {
-          showFlag: false
+          showFlag: false,
+          desc: {
+            all: '全部',
+            positive: '推荐',
+            negative: '吐槽'
+          },
+          selectType: 2,
+          onlyContent: true
         }
       },
       components: {
@@ -79,6 +104,12 @@
         ratingselect
       },
       methods: {
+        addFirst (event) {
+          if (!event._constructed) {
+            return
+          }
+          Vue.set(this.food, 'count', '1')
+        },
         show () {
           this.showFlag = true
           this.$nextTick(() => {
@@ -90,6 +121,28 @@
               this.scroll.refresh()
             }
           })
+        },
+        selectthisType (type) {
+          this.selectType = type
+          this.$nextTick(() => {
+            this.scroll.refresh()
+          })
+        },
+        toggleContent () {
+          this.onlyContent = !this.onlyContent
+          this.$nextTick(() => {
+            this.scroll.refresh()
+          })
+        },
+        needShow (type, text) {
+          if (this.onlyContent && !text) {
+            return false
+          }
+          if (this.selectType === 2) {
+            return true
+          } else {
+            return this.selectType === type
+          }
         }
       },
       filters: {
