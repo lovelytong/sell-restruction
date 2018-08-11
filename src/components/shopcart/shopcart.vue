@@ -10,10 +10,10 @@
             <div class="num" v-show="totalNum">{{totalNum}}</div>
           </div>
           <div class="price" :class="{'highlight':totalNum>0}">¥{{totalPrice}}</div>
-          <div class="desc">另需配送费¥{{sellDate.deliveryPrice}}元</div>
+          <div class="desc">另需配送费¥{{deliveryPrice}}元</div>
         </div>
         <div class="content-right" @click.stop.prevent="pay">
-          <div class="pay" :class="{enough:totalPrice>sellDate.minPrice}">{{payDesc}}</div>
+          <div class="pay" :class="{enough:totalPrice>minPrice}">{{payDesc}}</div>
         </div>
       </div>
       <transition name="fold">
@@ -59,7 +59,12 @@
       cartcontrol
     },
     computed: {
-      ...mapState(['goodsData', 'sellDate']),
+      // ...mapState(['goodsData', 'sellDate']),
+      ...mapState({
+        gooddData: 'goodsData',
+        minPrice: state => state.sellData.minPrice,
+        deliveryPrice: state => state.sellData.deliveryPrice
+      }),
       ...mapGetters(['selectFoods']),
       totalNum () {
         let count = 0
@@ -77,9 +82,9 @@
       },
       payDesc () {
         if (this.totalPrice === 0) {
-          return `￥${this.sellDate.minPrice}元起送`
-        } else if (this.totalPrice < this.sellDate.minPrice) {
-          let diff = this.sellDate.minPrice - this.totalPrice
+          return `￥${this.minPrice}元起送`
+        } else if (this.totalPrice < this.minPrice) {
+          let diff = this.minPrice - this.totalPrice
           return `还差￥${diff}元起送`
         } else {
           return `去结算`
@@ -115,7 +120,7 @@
         })
       },
       pay () {
-        if (this.totalPrice < this.sellDate.minPrice) {
+        if (this.totalPrice < this.minPrice) {
           return
         }
         window.alert(`支付${this.totalPrice}元`)

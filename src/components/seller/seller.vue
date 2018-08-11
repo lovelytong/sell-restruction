@@ -84,7 +84,7 @@
     },
     computed: {
       ...mapState({
-        seller: 'sellDate'
+        seller: 'sellData'
       }),
       favoriteText () {
         return this.favorite ? '已收藏' : '收藏'

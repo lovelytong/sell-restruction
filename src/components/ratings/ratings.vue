@@ -89,7 +89,7 @@
     computed: {
       ...mapState({
         ratingData: 'ratingData',
-        seller: 'sellDate'
+        seller: 'sellData'
       })
     },
     methods: {

@@ -77,7 +77,7 @@
       }
     },
     computed: {
-      ...mapState({seller: state => state.sellDate})
+      ...mapState({seller: state => state.sellData})
     },
     methods: {
       ...mapActions(['getData']),
@@ -85,7 +85,7 @@
       getSellData: async function () {
         let res = await this.getData({url: '/seller'})
         if (!res.errno) {
-          this.$store.state.sellDate = res.data
+          this.$store.state.sellData = res.data
         } else {
           console.log(res.errno)
         }
