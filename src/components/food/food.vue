@@ -17,7 +17,7 @@
             <span class="now">￥{{food.price}}</span><span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
           </div>
           <div class="cartcontrol-wrapper">
-            <cartcontrol :food="food"></cartcontrol>
+            <cartcontrol :food="food" @add="addFood"></cartcontrol>
           </div>
           <div class="buy"
                v-show="!food.count || food.count===0"
@@ -104,10 +104,14 @@
         ratingselect
       },
       methods: {
+        addFood (target) {
+          this.$emit('add', target)
+        },
         addFirst (event) {
           if (!event._constructed) {
             return
           }
+          this.$emit('add', event.target)
           Vue.set(this.food, 'count', '1')
         },
         show () {

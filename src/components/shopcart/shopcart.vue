@@ -16,6 +16,15 @@
           <div class="pay" :class="{enough:totalPrice>minPrice}">{{payDesc}}</div>
         </div>
       </div>
+      <div class="ball-container">
+        <div>
+          <transition name="drop"  @after-enter="afterDrop" @before-enter="beforeDrop" @enter="dropping">
+            <div class="ball" v-show="dropShow">
+              <div class="inner inner-hook"></div>
+            </div>
+          </transition>
+        </div>
+      </div>
       <transition name="fold">
         <div class="shopcart-list" v-show="listShow">
           <div class="list-header">
@@ -30,7 +39,7 @@
                   <span>￥{{food.price*food.count}}</span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  <cartcontrol :food="food"></cartcontrol>
+                  <cartcontrol :food="food" @add="addFood"></cartcontrol>
                 </div>
               </li>
             </ul>
@@ -52,14 +61,15 @@
   export default {
     data () {
       return {
-        fold: false
+        fold: false,
+        dropShow: false,
+        ballPosition: null
       }
     },
     components: {
       cartcontrol
     },
     computed: {
-      // ...mapState(['goodsData', 'sellDate']),
       ...mapState({
         gooddData: 'goodsData',
         minPrice: state => state.sellData.minPrice,
@@ -98,6 +108,37 @@
       }
     },
     methods: {
+      addFood (target) {
+        this.drop(target)
+      },
+      beforeDrop (el) {
+        let rect = this.ballPosition.getBoundingClientRect()
+        let x = rect.left - 32
+        let y = -(window.innerHeight - rect.top - 22)
+        el.style.display = ''
+        el.style.transform = `translate3d(0, ${y}px, 0)`
+        let inner = el.getElementsByClassName('inner-hook')[0]
+        inner.style.transform = `translate3d(${x}px,0,0)`
+      },
+      dropping (el, done) {
+        this.$nextTick(() => {
+          el.style.transform = 'translate3d(0, 0, 0)'
+          let inner = el.getElementsByClassName('inner-hook')[0]
+          inner.style.transform = 'translate3d(0,0,0)'
+          el.addEventListener('transitionend', done)
+        })
+      },
+      afterDrop (el) {
+        // console.log('afterdrop', el)
+        this.$nextTick(() => {
+          this.dropShow = false
+          el.style.display = 'none'
+        })
+      },
+      drop (target) {
+        this.ballPosition = target
+        this.dropShow = true
+      },
       toggleList () {
         if (this.selectFoods.length) {
           this.fold = !this.fold
@@ -115,6 +156,7 @@
         }
       },
       clearCart () {
+        this.fold = false
         this.selectFoods.forEach((food) => {
           food.count = 0
         })
@@ -215,6 +257,19 @@
             background: #00b43c
             color: #fff
 
+    .ball-container
+      .ball
+        position: fixed
+        left: 32px
+        bottom: 22px
+        z-index: 1
+        transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+        .inner
+          width: 16px
+          height: 16px
+          border-radius: 50%
+          background: rgb(0, 160, 220)
+          transition: all 0.4s linear
     .shopcart-list
       position: absolute
       left: 0

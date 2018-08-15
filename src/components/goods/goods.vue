@@ -45,7 +45,7 @@
                   <span class="now">¥{{food.price}}</span><span class="old" v-show="food.oldPrice">{{food.oldPrice}}</span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  <cartcontrol :food="food"></cartcontrol>
+                  <cartcontrol :food="food" @add="addFood"></cartcontrol>
                 </div>
               </div>
             </li>
@@ -53,8 +53,8 @@
         </li>
       </ul>
     </div>
-    <shopcart></shopcart>
-    <food :food="selectedFood" ref="food"></food>
+    <shopcart ref="shopcart"></shopcart>
+    <food :food="selectedFood" ref="food" @add="addFood"></food>
   </div>
 </template>
 
@@ -94,6 +94,14 @@
     },
     methods: {
       ...mapActions(['getData']),
+      addFood (target) {
+        this._drop(target)
+      },
+      _drop (target) {
+        this.$nextTick(() => {
+          this.$refs.shopcart.drop(target)
+        })
+      },
       selectFood (food, event) {
         if (!event._constructed) {
            return
