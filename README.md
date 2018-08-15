@@ -1,4 +1,5 @@
 # sell
+用Vuex和axios重构了vue高仿饿了么的商家模块
 
 > A Vue.js project
 
